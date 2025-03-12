@@ -70,6 +70,18 @@ func PostLogin(c *gin.Context) {
 
 	// access token & refresh token 생성
 
+	respond.AccessToken, err = security.MakeAccessToken(respond.User)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creating access token"})
+		return
+	}
+
+	respond.RefreshToken, err = security.MakeRefreshToken(respond.User)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creating refresh token"})
+		return
+	}
+
 	// commit the transaction
 	if err := tx.Commit(); err != nil {
 		c.JSON(500, gin.H{"error": "Failed to commit transaction"})
