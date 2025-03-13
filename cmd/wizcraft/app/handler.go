@@ -37,4 +37,6 @@ func RegisterRoutes(router *gin.Engine) {
 	handlers.RegisterAPIRoutes(router)
 	handlers.RegisterDatabaseRoutes(router)
 	handlers.RegisterServiceRoutes(router)
+	handlers.RegisterUserRoutes(router)
+	handlers.RegisterLoginRoutes(router)
 }

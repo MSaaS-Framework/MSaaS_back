@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -93,7 +94,6 @@ func StartServer() {
 	password := os.Getenv("POSTGRES_PASSWORD")
 	webPort := os.Getenv("WIZCRAFT_PORT")
 
-	// ent 초기화 - 추후에 env를 사용하여 데이터를 가져오도록 수정
 	// PostgreSQL 연결 문자열을 구성합니다.
 	postgresDSN := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
 		host, dbPort, user, dbname, password)
@@ -125,6 +125,20 @@ func StartServer() {
 
 	// 라우터에 CRUD 경로를 등록
 	RegisterRoutes(router)
+
+	// 초기 사용자 생성
+	// security.CreateInitialUser(DBClient)
+
+	// swagger 경로 등록
+	router.Static("/swagger-ui", "./app/swagger/ui")
+
+	router.GET("/swagger/openapi.yaml", func(c *gin.Context) {
+		c.File("./app/swagger/openapi.yaml")
+	})
+
+	router.GET("/swagger", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/swagger-ui/index.html")
+	})
 
 	// 웹 서버 시작
 	log.Printf("반갑습니다. 서버가 포트 %s에서 실행 중입니다.", webPort)

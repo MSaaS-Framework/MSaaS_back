@@ -13,8 +13,10 @@ COPY . .
 # 의존성 다운로드
 RUN go mod download
 
+WORKDIR /app/cmd/wizcraft/
+
 # go build 명령어로 wizcraft 바이너리 빌드
-RUN go build -o wizcraft ./cmd/wizcraft/wizcraft.go
+RUN go build -o wizcraft wizcraft.go
 
 # CMD 명령어에서 air로 프로젝트 실행하되, air가 wizcraft 바이너리를 실행하도록 air 설정 파일 수정
-CMD ["air", "-c", "./cmd/wizcraft/.air.toml"]
+CMD ["air", "-c", ".air.toml"]
