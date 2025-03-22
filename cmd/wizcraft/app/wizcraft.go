@@ -1,14 +1,18 @@
 package app
 
 import (
-	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent"
-	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent/migrate"
-	"MSaaS-Framework/MSaaS/pkg/crub"
 	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+
+	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent"
+	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent/migrate"
+	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/handlers"
+	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/repositories"
+	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/services"
+	"MSaaS-Framework/MSaaS/pkg/crub"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -22,7 +26,9 @@ func init() {
 	if err := godotenv.Load("../../.env"); err != nil {
 		log.Println(".env 파일을 로드할 수 없습니다. 기본 환경 변수를 사용합니다.")
 	}
+
 	fmt.Println("환경 변수 로드 완료")
+	fmt.Println(os.Getenv("POSTGRES_USER"))
 }
 
 // NewWizcraftCommand는 루트 명령어를 생성합니다.
@@ -103,6 +109,8 @@ func StartServer() {
 	if err != nil {
 		log.Fatalf("failed opening connection to postgres: %v", err)
 	}
+
+	fmt.Println("???? : ", postgresDSN)
 	defer DBClient.Close()
 	// Run the auto migration tool.
 	if err := DBClient.Schema.Create(
@@ -110,6 +118,7 @@ func StartServer() {
 		migrate.WithDropIndex(true),  // 기존 인덱스를 삭제
 		migrate.WithDropColumn(true), // 기존 컬럼을 삭제
 	); err != nil {
+		fmt.Println("qwekoqwkeop")
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
@@ -122,6 +131,11 @@ func StartServer() {
 
 	// DB 미들웨어 등록
 	router.Use(DBMiddleware(DBClient))
+
+	userRepo := repositories.NewUserRepository(DBClient)
+	userService := services.NewUserService(userRepo, DBClient)
+	userHandler := handlers.NewUserHandler(userService)
+	userHandler.RegisterUserRoutes(router)
 
 	// 라우터에 CRUD 경로를 등록
 	RegisterRoutes(router)

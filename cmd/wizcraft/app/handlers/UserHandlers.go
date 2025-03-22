@@ -1,18 +1,78 @@
 package handlers
 
 import (
-	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent/user"
-	"MSaaS-Framework/MSaaS/internal/security"
-	"MSaaS-Framework/MSaaS/pkg/base"
 	"MSaaS-Framework/MSaaS/pkg/object"
+	uuid "github.com/google/uuid"
 
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/services"
 )
 
+type UserHandler struct {
+	service *services.UserService
+}
+
+func NewUserHandler(service *services.UserService) *UserHandler {
+	return &UserHandler{
+		service: service,
+	}
+}
+
+// RegisterUserRoutes registers the CRUD routes for User
+func (h *UserHandler) RegisterUserRoutes(router *gin.Engine) {
+	router.POST("/user", h.CreateUser)
+	router.GET("/user/:id", h.GetUser)
+	router.PUT("/user/:id", h.UpdateUser)
+	router.DELETE("/user/:id", h.DeleteUser)
+}
+
 // CreateUser creates a new User
-func CreateUser(c *gin.Context) {
+func (h *UserHandler) CreateUser(c *gin.Context) {
+	userFromClient := object.User{}
+
+	if err := c.ShouldBindJSON(&userFromClient); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
+		return
+	}
+
+	user, err := h.service.CreateUser(c, userFromClient)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
+// GetUser gets a User by ID
+func (h *UserHandler) GetUser(c *gin.Context) {
+	id := c.Param("id")
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
+
+	user, err := h.service.GetUserByID(c, uuid)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
+// UpdateUser updates an existing User by ID
+func (h *UserHandler) UpdateUser(c *gin.Context) {
+	id := c.Param("id")
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
 
 	userFromClient := object.User{}
 
@@ -21,74 +81,28 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	client, err := base.GetDBClientFromContext(c)
+	user, err := h.service.UpdateUser(c, uuid, userFromClient)
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Failed to get database client"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 		return
 	}
 
-	tx, err := client.Tx(c)
-	if err != nil {
-		c.JSON(500, gin.H{"error": "Failed to start transaction"})
-		return
-	}
-
-	// check if user already exists
-	_, err = tx.User.Query().Where(user.EmailEQ(userFromClient.Email)).Only(c)
-	if err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User already exists"})
-		return
-	}
-
-	hashedPassword, salt, err := security.HashPassword(userFromClient.Password)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error hashing password"})
-		return
-	}
-
-	respond, err := tx.User.Create().
-		SetEmail(userFromClient.Email).
-		SetPassword(hashedPassword).
-		SetSalt(salt).
-		Save(c)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creating user"})
-		return
-	}
-
-	if err := tx.Commit(); err != nil {
-		c.JSON(500, gin.H{"error": "Failed to commit transaction"})
-		return
-	}
-
-	c.JSON(http.StatusOK, respond)
-}
-
-// GetUser gets a User by ID
-func GetUser(c *gin.Context) {
-	id := c.Param("id")
-	// TODO: Add get logic
-	c.String(http.StatusOK, "Get User with ID: %s", id)
-}
-
-// UpdateUser updates an existing User by ID
-func UpdateUser(c *gin.Context) {
-	id := c.Param("id")
-	// TODO: Add update logic
-	c.String(http.StatusOK, "Update User with ID: %s", id)
+	c.JSON(http.StatusOK, user)
 }
 
 // DeleteUser deletes an existing User by ID
-func DeleteUser(c *gin.Context) {
+func (h *UserHandler) DeleteUser(c *gin.Context) {
 	id := c.Param("id")
-	// TODO: Add delete logic
-	c.String(http.StatusOK, "Delete User with ID: %s", id)
-}
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
 
-// RegisterUserRoutes registers the CRUD routes for User
-func RegisterUserRoutes(router *gin.Engine) {
-	router.POST("/user", CreateUser)
-	router.GET("/user/:id", GetUser)
-	router.PUT("/user/:id", UpdateUser)
-	router.DELETE("/user/:id", DeleteUser)
+	if err := h.service.DeleteUser(c, uuid); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
+		return
+	}
+
+	c.String(http.StatusOK, "Delete User with ID: %s", id)
 }
