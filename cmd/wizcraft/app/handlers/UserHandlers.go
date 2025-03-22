@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/middleware"
 	"MSaaS-Framework/MSaaS/pkg/object"
 	uuid "github.com/google/uuid"
 
@@ -24,9 +25,12 @@ func NewUserHandler(service *services.UserService) *UserHandler {
 // RegisterUserRoutes registers the CRUD routes for User
 func (h *UserHandler) RegisterUserRoutes(router *gin.Engine) {
 	router.POST("/user", h.CreateUser)
-	router.GET("/user/:id", h.GetUser)
-	router.PUT("/user/:id", h.UpdateUser)
-	router.DELETE("/user/:id", h.DeleteUser)
+
+	// Authenticated routes
+	rg := router.Group("/user", middleware.AuthMiddleware())
+	rg.GET(":id", h.GetUser)
+	rg.PUT(":id", h.UpdateUser)
+	rg.DELETE(":id", h.DeleteUser)
 }
 
 // CreateUser creates a new User
