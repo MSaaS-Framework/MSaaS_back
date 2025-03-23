@@ -24,7 +24,6 @@ func CreateProject(c *gin.Context) {
 
 	// Save project to database by using Ent
 	// Context에서 DBClient를 가져옴
-
 	client, err := base.GetDBClientFromContext(c)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "Failed to get database client"})

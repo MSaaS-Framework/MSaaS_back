@@ -1,13 +1,18 @@
 package app
 
 import (
-	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent"
-	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent/migrate"
-	"MSaaS-Framework/MSaaS/pkg/crub"
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
+
+	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent"
+	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent/migrate"
+	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/handlers"
+	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/repositories"
+	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/services"
+	"MSaaS-Framework/MSaaS/pkg/crub"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -21,7 +26,9 @@ func init() {
 	if err := godotenv.Load("../../.env"); err != nil {
 		log.Println(".env 파일을 로드할 수 없습니다. 기본 환경 변수를 사용합니다.")
 	}
+
 	fmt.Println("환경 변수 로드 완료")
+	fmt.Println(os.Getenv("POSTGRES_USER"))
 }
 
 // NewWizcraftCommand는 루트 명령어를 생성합니다.
@@ -93,9 +100,6 @@ func StartServer() {
 	password := os.Getenv("POSTGRES_PASSWORD")
 	webPort := os.Getenv("WIZCRAFT_PORT")
 
-	println(host, dbPort, user, dbname, password, webPort)
-
-	// ent 초기화 - 추후에 env를 사용하여 데이터를 가져오도록 수정
 	// PostgreSQL 연결 문자열을 구성합니다.
 	postgresDSN := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
 		host, dbPort, user, dbname, password)
@@ -105,6 +109,8 @@ func StartServer() {
 	if err != nil {
 		log.Fatalf("failed opening connection to postgres: %v", err)
 	}
+
+	fmt.Println("???? : ", postgresDSN)
 	defer DBClient.Close()
 	// Run the auto migration tool.
 	if err := DBClient.Schema.Create(
@@ -112,6 +118,7 @@ func StartServer() {
 		migrate.WithDropIndex(true),  // 기존 인덱스를 삭제
 		migrate.WithDropColumn(true), // 기존 컬럼을 삭제
 	); err != nil {
+		fmt.Println("qwekoqwkeop")
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
@@ -125,8 +132,27 @@ func StartServer() {
 	// DB 미들웨어 등록
 	router.Use(DBMiddleware(DBClient))
 
+	userRepo := repositories.NewUserRepository(DBClient)
+	userService := services.NewUserService(userRepo, DBClient)
+	userHandler := handlers.NewUserHandler(userService)
+	userHandler.RegisterUserRoutes(router)
+
 	// 라우터에 CRUD 경로를 등록
 	RegisterRoutes(router)
+
+	// 초기 사용자 생성
+	// security.CreateInitialUser(DBClient)
+
+	// swagger 경로 등록
+	router.Static("/swagger-ui", "./app/swagger/ui")
+
+	router.GET("/swagger/openapi.yaml", func(c *gin.Context) {
+		c.File("./app/swagger/openapi.yaml")
+	})
+
+	router.GET("/swagger", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/swagger-ui/index.html")
+	})
 
 	// 웹 서버 시작
 	log.Printf("반갑습니다. 서버가 포트 %s에서 실행 중입니다.", webPort)

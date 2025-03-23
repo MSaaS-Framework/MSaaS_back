@@ -1,8 +1,9 @@
 package app
 
 import (
-	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/handlers"
 	"net/http"
+
+	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/handlers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -37,4 +38,5 @@ func RegisterRoutes(router *gin.Engine) {
 	handlers.RegisterAPIRoutes(router)
 	handlers.RegisterDatabaseRoutes(router)
 	handlers.RegisterServiceRoutes(router)
+	handlers.RegisterLoginRoutes(router)
 }

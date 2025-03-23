@@ -124,6 +124,7 @@ var (
 		{Name: "name", Type: field.TypeString, Default: "unknown"},
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "password", Type: field.TypeString},
+		{Name: "salt", Type: field.TypeString},
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "developer", "engineer"}, Default: "developer"},
 		{Name: "active", Type: field.TypeBool, Default: true},
 		{Name: "created_at", Type: field.TypeTime},

@@ -1,6 +1,6 @@
 <p align="center"><img src="https://github.com/user-attachments/assets/6800b983-11c0-4509-a5e2-4dbc08248e21" height="300px" width="300px" ></p>
 
-| 한국어 | [English](https://github.com/MSaaS-Framework/MSaaS/blob/main/README-EN.md) |
+| 한국어 | [English](https://github.com/MSaaS-Framework/MSaaS_back/blob/main/README.md) |
 
 ---
 

@@ -22,6 +22,8 @@ const (
 	FieldEmail = "email"
 	// FieldPassword holds the string denoting the password field in the database.
 	FieldPassword = "password"
+	// FieldSalt holds the string denoting the salt field in the database.
+	FieldSalt = "salt"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
 	// FieldActive holds the string denoting the active field in the database.
@@ -62,6 +64,7 @@ var Columns = []string{
 	FieldName,
 	FieldEmail,
 	FieldPassword,
+	FieldSalt,
 	FieldRole,
 	FieldActive,
 	FieldCreatedAt,
@@ -150,6 +153,11 @@ func ByEmail(opts ...sql.OrderTermOption) OrderOption {
 // ByPassword orders the results by the password field.
 func ByPassword(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPassword, opts...).ToFunc()
+}
+
+// BySalt orders the results by the salt field.
+func BySalt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSalt, opts...).ToFunc()
 }
 
 // ByRole orders the results by the role field.

@@ -25,6 +25,7 @@ func (User) Fields() []ent.Field {
 		field.String("email").Unique(),
 		// 비밀번호 (민감 정보)
 		field.String("password").Sensitive(),
+		field.String("salt").Sensitive(),
 		// 역할 (관리자, 개발자, 엔지니어 등)
 		field.Enum("role").Values("admin", "developer", "engineer").Default("developer"),
 		// 활성화 상태

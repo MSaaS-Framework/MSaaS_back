@@ -73,6 +73,20 @@ func (uu *UserUpdate) SetNillablePassword(s *string) *UserUpdate {
 	return uu
 }
 
+// SetSalt sets the "salt" field.
+func (uu *UserUpdate) SetSalt(s string) *UserUpdate {
+	uu.mutation.SetSalt(s)
+	return uu
+}
+
+// SetNillableSalt sets the "salt" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableSalt(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetSalt(*s)
+	}
+	return uu
+}
+
 // SetRole sets the "role" field.
 func (uu *UserUpdate) SetRole(u user.Role) *UserUpdate {
 	uu.mutation.SetRole(u)
@@ -325,6 +339,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
 	}
+	if value, ok := uu.mutation.Salt(); ok {
+		_spec.SetField(user.FieldSalt, field.TypeString, value)
+	}
 	if value, ok := uu.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 	}
@@ -503,6 +520,20 @@ func (uuo *UserUpdateOne) SetPassword(s string) *UserUpdateOne {
 func (uuo *UserUpdateOne) SetNillablePassword(s *string) *UserUpdateOne {
 	if s != nil {
 		uuo.SetPassword(*s)
+	}
+	return uuo
+}
+
+// SetSalt sets the "salt" field.
+func (uuo *UserUpdateOne) SetSalt(s string) *UserUpdateOne {
+	uuo.mutation.SetSalt(s)
+	return uuo
+}
+
+// SetNillableSalt sets the "salt" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableSalt(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetSalt(*s)
 	}
 	return uuo
 }
@@ -788,6 +819,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.Salt(); ok {
+		_spec.SetField(user.FieldSalt, field.TypeString, value)
 	}
 	if value, ok := uuo.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)

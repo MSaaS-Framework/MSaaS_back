@@ -4,7 +4,7 @@
 root = "."
 tmp_dir = "tmp"
 [build]
-cmd = "go build -o tmp/main ./cmd/wizcraft"
+cmd = "go build -o tmp/main ."
 bin = "tmp/main"
 args_bin = ["start"]
 

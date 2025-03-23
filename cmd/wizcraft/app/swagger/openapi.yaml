@@ -1,0 +1,95 @@
+openapi: 3.0.3
+info:
+  title: MSaaS Login API
+  version: 1.0.0
+  description: 사용자 로그인 및 로그아웃 API
+
+paths:
+  /login:
+    post:
+      summary: 사용자 로그인
+      description: 이메일과 비밀번호를 통해 사용자를 인증하고 액세스 및 리프레시 토큰을 발급합니다.
+      tags:
+        - 인증
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: 요청 데이터 오류
+        '401':
+          description: 비밀번호 불일치
+        '500':
+          description: 서버 오류
+
+  /logout/{id}:
+    get:
+      summary: 사용자 로그아웃
+      description: 특정 사용자 ID에 대한 로그아웃을 수행합니다.
+      tags:
+        - 인증
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 로그아웃 성공
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Get Logout with ID: 123"
+        '500':
+          description: 서버 오류
+
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          example: "user@example.com"
+        password:
+          type: string
+          example: "securepassword"
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        refresh_token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "123"
+        email:
+          type: string
+          example: "user@example.com"
+        createdAt:
+          type: string
+          format: date-time
