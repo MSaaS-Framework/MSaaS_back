@@ -49,5 +49,7 @@ func (User) Edges() []ent.Edge {
 		edge.To("permissions", UserGeneralSpecPermissions.Type),
 		// Project와의 관계 추가
 		edge.To("projects", Project.Type),
+		// Token과의 관계 추가
+		edge.To("tokens", Token.Type),
 	}
 }

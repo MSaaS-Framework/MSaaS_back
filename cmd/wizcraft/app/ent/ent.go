@@ -8,6 +8,7 @@ import (
 	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent/generalspec"
 	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent/project"
 	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent/service"
+	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent/token"
 	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent/user"
 	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent/usergeneralspecpermissions"
 	"context"
@@ -84,6 +85,7 @@ func checkColumn(table, column string) error {
 			generalspec.Table:                generalspec.ValidColumn,
 			project.Table:                    project.ValidColumn,
 			service.Table:                    service.ValidColumn,
+			token.Table:                      token.ValidColumn,
 			user.Table:                       user.ValidColumn,
 			usergeneralspecpermissions.Table: usergeneralspecpermissions.ValidColumn,
 		})

@@ -4,8 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 
 	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent"
+	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent/token"
 	"MSaaS-Framework/MSaaS/cmd/wizcraft/app/ent/user"
 	"MSaaS-Framework/MSaaS/pkg/base"
 
@@ -82,6 +84,17 @@ func PostLogin(c *gin.Context) {
 		return
 	}
 
+	// save the refresh token to the database
+	_, err = tx.Token.Create().
+		SetAccessToken(respond.AccessToken).
+		SetRefreshToken(respond.RefreshToken).
+		SetUser(respond.User).
+		Save(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error saving refresh token"})
+		return
+	}
+
 	// commit the transaction
 	if err := tx.Commit(); err != nil {
 		c.JSON(500, gin.H{"error": "Failed to commit transaction"})
@@ -95,7 +108,44 @@ func PostLogin(c *gin.Context) {
 // GetLogout gets a Logout by ID
 func GetLogout(c *gin.Context) {
 	id := c.Param("id")
-	// TODO: Add get logic
+
+	// String to UUID conversion
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+	// delete the Tokens from the database
+	client, err := base.GetDBClientFromContext(c)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to get database client"})
+		return
+	}
+
+	tx, err := client.Tx(c) // 트랜잭션 시작
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to start transaction"})
+		return
+	}
+
+	_, err = tx.Token.
+		Delete().
+		Where(
+			token.HasUserWith(user.IDEQ(uid)),
+		).
+		Exec(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting token"})
+		return
+	}
+
+	// commit the transaction
+	if err := tx.Commit(); err != nil {
+		c.JSON(500, gin.H{"error": "Failed to commit transaction"})
+		return
+	}
+
 	c.String(http.StatusOK, "Get Logout with ID: %s", id)
 }
 

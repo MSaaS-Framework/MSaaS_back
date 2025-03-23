@@ -22,6 +22,8 @@ type Tx struct {
 	Project *ProjectClient
 	// Service is the client for interacting with the Service builders.
 	Service *ServiceClient
+	// Token is the client for interacting with the Token builders.
+	Token *TokenClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// UserGeneralSpecPermissions is the client for interacting with the UserGeneralSpecPermissions builders.
@@ -162,6 +164,7 @@ func (tx *Tx) init() {
 	tx.GeneralSpec = NewGeneralSpecClient(tx.config)
 	tx.Project = NewProjectClient(tx.config)
 	tx.Service = NewServiceClient(tx.config)
+	tx.Token = NewTokenClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.UserGeneralSpecPermissions = NewUserGeneralSpecPermissionsClient(tx.config)
 }

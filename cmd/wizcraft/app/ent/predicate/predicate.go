@@ -21,6 +21,9 @@ type Project func(*sql.Selector)
 // Service is the predicate function for service builders.
 type Service func(*sql.Selector)
 
+// Token is the predicate function for token builders.
+type Token func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
 

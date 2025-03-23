@@ -118,6 +118,27 @@ var (
 			},
 		},
 	}
+	// TokensColumns holds the columns for the "tokens" table.
+	TokensColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "access_token", Type: field.TypeString},
+		{Name: "refresh_token", Type: field.TypeString},
+		{Name: "user_tokens", Type: field.TypeUUID, Nullable: true},
+	}
+	// TokensTable holds the schema information for the "tokens" table.
+	TokensTable = &schema.Table{
+		Name:       "tokens",
+		Columns:    TokensColumns,
+		PrimaryKey: []*schema.Column{TokensColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "tokens_users_tokens",
+				Columns:    []*schema.Column{TokensColumns[3]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -198,6 +219,7 @@ var (
 		GeneralSpecsTable,
 		ProjectsTable,
 		ServicesTable,
+		TokensTable,
 		UsersTable,
 		UserGeneralSpecPermissionsTable,
 		UserProjectsTable,
@@ -211,6 +233,7 @@ func init() {
 	DatabasesTable.ForeignKeys[1].RefTable = ServicesTable
 	GeneralSpecsTable.ForeignKeys[0].RefTable = ProjectsTable
 	ServicesTable.ForeignKeys[0].RefTable = GeneralSpecsTable
+	TokensTable.ForeignKeys[0].RefTable = UsersTable
 	UserGeneralSpecPermissionsTable.ForeignKeys[0].RefTable = GeneralSpecsTable
 	UserGeneralSpecPermissionsTable.ForeignKeys[1].RefTable = UsersTable
 	UserProjectsTable.ForeignKeys[0].RefTable = UsersTable
